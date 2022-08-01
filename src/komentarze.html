@@ -1,0 +1,131 @@
+1. React wywołuje nasz komponent App.js, 
+ten komponent zwraca treść zamieszczoną w divie, 
+a treść jest potem renderowana (index.js -> "<App />") do elementu o id 'root' (document.getElementById('root'))
+
+2. Nasza aplikacja będzie miała 2 główne części. 
+    - Lista książek
+    - formularz do ich dodawania
+    Ta informacja daje nam sugestie do stworzenia komponentów, które od razu podzielą aplikację. 
+    - komponent do renderowania listy książek (tytułów)
+    - komponent formularza książek, z całą logiką obsługi inputów itp
+
+3. Importujemy komponenty do pliku głównego komponentu (App.js),
+a następnie możemy ich w nim użyc (<... />)
+
+Nasza aplikacja Reacta w elemencie o id root renderuje zawartość komponentu App 
+
+4. Żeby wyrenderować książki, musimy je najpierw posiadać w postaci danych. Łatwiej byłoby trzymać te dane w komponencie BooksList, ale tylko na początku. Potem będzie rowijany komponent BookForm, który będzie musiał mieć dostęp do tych książek, żeby móc je modyfikować. Dlatego dane te będą przechowywane w komponencie app, aby łatwo móc dostarczyć je do BooksList, za pomocą parametru, ale rownież do BookForm. Równie łątwo będzie można przygotować funkcję do modyfikacji tych danych, która też będzie przekazywana za pomocą parametru
+
+5. Dane o książkach wprowadzamy przy użyciu HOOKA: "useState". Trzeba go zaimportować z Reacta
+"import { useState } from "react";"
+
+Daje on 2 ważne zalety:
+- dostarczy nam specjalną funkcję do modyfikacji danych, która będzie aktualizowała dane, ale również odświeży nam widok 
+- daje pewność, że dane nie będą resetowane przy odświeżeniu widoku
+
+Funkcja useState zwraca nam tablicę, więc możemy od razu z tej tablicy wyciągnąć oba elementy jako stałe przy użyciu destrukturyzacji ([books, setBooks])
+
+6. Dane o książkach musimy przekazać z komponentu app do komponentu BooksList korzystając z parametrów. Parametr books więc niech będzie po prostu zawartością books, czyli ten stan (const [books])
+(do wywołania komponentu BookForm dodajemy "books={books}")
+
+7. Teraz możemy taki parametr wykorzystać w komponencie BooksList, tworząc prostą listę. 
+Następnie za pomocą funkcji "map" przejdziemy po każdej książce. 
+Dla każdej książki wyrenderujemy element li. 
+Każdy element li musi mieć parametr "key" ponieważ React go WYMAGA! 
+Jako treść elementu li zapiszemy tytuł i autora
+
+8. Destrukturyzacja (props zamieniamy na books, przez co nie musimy juz używać słowa props)
+
+9. Książki będzie można usuwać. Oznacza to modyfikację stanu książek. 
+W komponencie app potrzebna więc będzie funkcja do usuwania elementów. Tam, ponieważ mamy tam dostęp do funkcji "setBooks", która potrafi go modyfikować. 
+Potem przekażemy ją do komponentu BooksList.
+W tym miejscu ją odpalimy
+
+10. Funkcja removeBook powinna przyjmować jako parametr/argument informację, jaką książkę chcemy usunąć (bookId). 
+
+Musimy ustalić zawartość nowego books. Będzie to tablica ze wszystkimi elementami, oprócz tego, który usuwamy. Możemy skorzystać z funkcji "filter" z odpowiednim warunkiem. 
+
+Funkcja "filter" zwraca te elementy z tablicy, które spełniają wybrany warunek. 
+U nas takim warunkiem jest to, że Id danej książki ma być inne niż argument BookId. 
+
+Filter powinien więc zwrócić wszystkie książki z wyjątkiem tej jednej która ma podane BookId. Tylko ta jedna książka, której book.id będzie równe bookId nie spełni warunku.
+
+11. Dalej musimy taką funkcję przekazać do komponentu. 
+w BooksList można teraz taki parametr odebrać: 
+({..., removeBook}), 
+a następnie użyć w formie buttonu:
+<button> ... </button>
+a po kliknięciu uruchamia funkcję, która jako argument otrzyma id książki
+
+12. Formularz zaczynamy od widoku. Sama książka ma 2 właściwości (tytuł i autor). Potrzebuje więc 2 inputy na każdą z właściwości. Potrzebujemy dostępu do wartości tych inputów w komponencie. W react zamiast queryselector stworzę nowe stany zsynchronizowane z inputami (useState).
+
+Aby skojarzyć stan z inputami nadaje wartości inputom. 
+Pierwszy przyjmie wartość "title", a przy wykryciu zmiany niech uruchamia funkcję setTitle, której przekażemy aktualną wartość inputu.
+Podobnie z Autorem
+Jako wartość przyjmie wartość stałą Author, a przy wykryciu zmiany w inpucie uruchomi funkcję setAuthor która tę wartość zmodyfikuje.
+
+13. Pozostaje button. Reakcja na próbę wysyłki formularza. Dodamy kolejny nasłuchiwacz na eventy Submitu. Niech włącza funckję handleSubmit. 
+Funkcja ta powinna powstymywać zachowanie domyślne (wysyłkę formularza do serwera), ale potrzebujemy jeszcze uruchomić funkcję która doda do listy książek (stan books) nową książkę. 
+Funkcję taką dodamy w komponencie, który ma dostęp do funkcji setBooks (app.js). Tam więc taką funkcję dodamy, tak jak removeBook
+
+Funkcja addBook powinna przyjąć informację o tym, jaką książkę trzeba dodać (parametr "newBook")
+
+Jeśli chodzi o instrukcję, która doda nową książkę do tablicy, to musimy włączyć setBooks(funkcja do modyfikacji stanu books), a jako nową wartość(zawartość) tablicy books, umieścimy nową tablicę, która dalej będzie miała zawartość aktualną (...books) plus jeden nowy obiekt, który będzie miał title zgodne z newBook.title i autora zgodnego z newBook.author 
+Obie informacje bierzemy z argumentu new
+
+Potrzebujemy jeszcze właściwości id. Do jej wygenerowania można użyć paczki short id ( gitBash: yarn add shortid ) ( id: shortid() )      
+
+Teraz taką funkcję możemy przekazać do komponentu BookForm 
+(<BookForm addBook={addBook} />)
+
+14. Teraz można taki parametr odebrać w komponencie BookForm
+(const BookForm = ({addBook})... ) 
+i w odpowiednim momencie włączyć 
+( pod e.preventDefault(); )
+i przekazać jej obiekt nowej książki z tytułęm i autorem
+( addBook({ title: title, author:author}); )
+na końcu zerujemy oba pola 
+setTitle i setAuthor
+
+
+
+PODSUMOWANIE TEGO CO NIE WIEM 
+- App.js jest rodzicem, a BookForm i BookList dzieckiem.
+- App.js zawiera funkcję removeBook
+- abu dziecko(BookList.js) mogło zmienić cos w rodzicu(App.js), rodzic musi mieć funkcję i przekazać referencję do tej funkcji dziecku. Żeby dziecko wiedziało, że może z niej skorzystać należy podać ją jako argument
+
+const BooksList = ({books, removeBook})  Oznacza to, że funkcja BooksList w komponencie BooksList może wpływać na "books" i "removeBook" u rodzica
+
+BookForm również nie ma możliwości modyfikacji listy książek, ale komponent app.js tak. Dlatego w komponencie rodzica(app.js) przygotowana zostałą funkcja addBook, a następnie przekazać ją w formie parametru dziecku- do komponentu BookForm. Dzięki temu komponent BookForm może włączyć parametr addBook, który spowoduje włączenie funkcji addBook, która może mienić stan bo znajduje się w tym samym komponencie.
+
+
+                        KLASY ZAMIAST FUNKCJI
+
+Musi to być klasa oparta na specjalnej klasie react'a 
+Klasa App będzie więc klasą główną i na niej będziemy opierać klasy potomne
+Jeśli chce działać na react to musze go zaimportować 
+(import React, { useState }...)
+
+Korzystając z klas dalej możemy używać stanów, ale deklaracja ich będzie inna. W tym przypadku mam możliwość użycia WŁAŚCIWOŚCI state. 
+właściwość state jest w tej chwili traktowana przez silnik JSa jako konstruktor (próbe utworzenia nowej właściwości o nazwie state, z wartością taką jaka zawarta jest w {}).
+Books staje się teraz częscią jednego obiektu.
+
+Skoro pracujemy na komponentach obiektowych to musimy zmienić deklaracje z "const" na deklaracje metod klasy.(usunięcie const) 
+
+this.setState jest funkcją, która pozwala na zmianę całości. Pochodzi z klasy bazowej (react). Nie możemy użyć setBooks ponieważ nie istnieje ona w wersji komponentów klasowych(zakomentowane). 
+setState zwracałaby tablicę w miejsce stanu. należy więc zawrzeć vartość w {} i dopisać "books:". (w miejsce starego state'u wstawiamy nowy i przekazujemy mu obiekt podobny do oryginalnego i wskazujemy, ze teraz books powinno być przefiltrowane)
+
+Komponent klasowy nie może czegoś zwracać!! Dlatego w tym przypadku nie będziemy wpisywali return w ciele klasy tylko skorzystamy z metody render(). Dopiero to co ona zwróci będzie traktowane jako widok naszego komponentu
+
+Podkreślone zostały błędy books, ponieważ nie są zadeklarowane. Należy więc odnieść się do this, czyli obiektu, a następnie do state. Dopiero tam się znajduje books 
+
+podobnie w render() -> return muszę się odnieść do instancji ponieważ np. removeBook jest teraz metodą. Muszę więc wejść do this(instancji) i dopiero tam znajdę te metody. 
+Mogę również umieścić skróty przed return(...) aby nie musieć wprowadzać ostatnich zmian:
+const { books } = this.state;
+const { addBook, removeBook} = this;
+
+W komponencie Booklist muszimy odnieść się do finkcji z innego komponentu(removeBooks). W komponentach klasowych parametry fukncji są dostępne pod właściwością props. Jeśli chcemy dojść do parametru books to wystarczy wejść do this.props (właściwość przygotowana przez klasę bazową)
+
+W komponencie BookForm nie mamy już takich funkcji jak setTitle czy setAuthor. Żeby skorzystać z możliwości jakie dają, możemy stworzyć 2 nowe metody które będą pełnić te role. 
+
+SetTitle może więc przyjmować wartość "nowa wartość"(value) i przy pomocy funkcji seState ustalać ją jako nową zawartość title
